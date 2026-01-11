@@ -1,0 +1,46 @@
+#root {
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.card {
+  padding: 2em;
+  margin-top: 2rem;
+  background-color: var(--color-bg-surface);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--color-accent-gold);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background-color: transparent;
+  color: var(--color-accent-gold);
+  border: 1px solid var(--color-accent-gold);
+  padding: 0.8em 1.6em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-gold);
+  color: var(--color-bg-main);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}

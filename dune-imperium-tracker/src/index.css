@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap');
+
+:root {
+  --color-bg-main: #121212;
+  --color-bg-surface: #1e1e1e;
+  --color-accent-gold: #d4af37;
+  --color-accent-spice: #b54b26;
+  --color-accent-blue: #2c5f66;
+  --color-text-main: #e0e0e0;
+  --color-text-muted: #a0a0a0;
+
+  --font-heading: 'Cinzel', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-main);
+  color: var(--color-text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  color: var(--color-accent-gold);
+}
+
+button {
+  font-family: var(--font-heading);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+select {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
+  color: var(--color-text-main);
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-accent-gold);
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+}
+
+label {
+  display: block;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  color: var(--color-accent-gold);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
