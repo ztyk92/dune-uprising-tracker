@@ -1,0 +1,11 @@
+width			1920
+height			1080
+language		EN
+mastervol		100
+bgmvol			100
+screenmode		0
+display			0
+cameraspeed		4
+brightness		50
+antialiaslevel	1
+firstboot	0

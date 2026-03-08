@@ -5,10 +5,11 @@ export default function ScoringView({ players, onComplete, onCancel }) {
     const [scores, setScores] = useState({});
 
     // Track which player we are currently scoring
-    // We iterate through players array. 0 to players.length - 1
+    // CRITICAL: Filter to only active players
+    const activePlayers = players.filter(p => p.name && p.name.trim() !== '');
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    const currentPlayer = players[currentIndex];
+    const currentPlayer = activePlayers[currentIndex];
 
     const handleScoreSelect = (score) => {
         // Save score for current player
@@ -16,7 +17,7 @@ export default function ScoringView({ players, onComplete, onCancel }) {
         setScores(newScores);
 
         // Advance to next player or finish
-        if (currentIndex < players.length - 1) {
+        if (currentIndex < activePlayers.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
             // Done!
@@ -110,7 +111,7 @@ export default function ScoringView({ players, onComplete, onCancel }) {
             </div>
 
             <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#666' }}>
-                Scoring {currentIndex + 1} of {players.length}
+                Scoring {currentIndex + 1} of {activePlayers.length}
             </div>
         </div>
     );

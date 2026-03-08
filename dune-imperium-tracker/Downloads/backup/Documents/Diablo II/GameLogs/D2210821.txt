@@ -1,0 +1,14 @@
+---------------------------------------------------------------
+DESKTOP-UIIR4ID Realm startup at 2021-08-21 12:14:55.718
+---------------------------------------------------------------
+12:14:55.719  ------------------------------------------------------
+12:14:55.719  2021-08-21 12:14:55
+12:14:55.719  Diablo II: Resurrected - Multiplayer Beta running under Win10 Version 10.0.19043
+12:14:55.719  Vendor:  Intel
+12:14:55.719  Description: Intel(R) Core(TM) i5-4460  CPU @ 3.20GHz
+12:14:55.719  Total Physical Memory: 16326.15MB
+12:14:55.719  Application Path: C:\Program Files (x86)\Diablo II Resurrected Beta\
+12:14:55.719  Local IP: 0.0.0.0
+12:14:55.719  Computer name: DESKTOP-UIIR4ID
+12:14:55.719  ------------------------------------------------------
+12:14:55.719  

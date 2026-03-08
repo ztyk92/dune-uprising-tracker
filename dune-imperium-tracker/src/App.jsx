@@ -4,8 +4,10 @@ import './App.css'
 import SetupWizard from './components/SetupWizard';
 import GameDashboard from './components/GameDashboard';
 import ScoringView from './components/ScoringView';
+import VPTrackingView from './components/VPTrackingView';
+import ConfirmationModal from './components/ConfirmationModal';
 
-const STORAGE_KEY = 'dune_imperium_tracker_state';
+const STORAGE_KEY = 'dune_uprising_tracker_state';
 
 
 function RecentGamesList({ leaders, availablePlayers }) {
@@ -73,6 +75,7 @@ function RecentGamesList({ leaders, availablePlayers }) {
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {g.players
+                .filter(p => (p.playerId || p.playerName || p.name) && (p.playerId || p.playerName || p.name).toString().trim() !== '')
                 .sort((a, b) => parseInt(b.vp) - parseInt(a.vp))
                 .map((p, idx) => {
                   // p.playerId and p.leaderId come from server mapping logic
@@ -121,6 +124,9 @@ function App() {
 
   const SHEET_ID = '1W6QdQtyJ3LkjYPedZzc0dczB_ecYLPdM2VKuS1bhMA4';
 
+  // Load VP Actions
+  const [vpActions, setVpActions] = useState([]);
+
   useEffect(() => {
     // Fetch Leaders
     fetch(`/api/leaders?spreadsheetId=${SHEET_ID}`)
@@ -133,7 +139,16 @@ function App() {
       .then(res => res.json())
       .then(data => setAvailablePlayers(data)) // [{id, name}, ...]
       .catch(err => console.error("Failed to load players:", err));
+
+    // Fetch VP Actions
+    fetch(`/api/vp-actions?spreadsheetId=${SHEET_ID}`)
+      .then(res => res.json())
+      .then(data => setVpActions(data))
+      .catch(err => console.error("Failed to load VP actions:", err));
   }, []);
+
+  // Modal State
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Save to local storage whenever state changes
   useEffect(() => {
@@ -146,25 +161,57 @@ function App() {
 
   const startSetup = () => setGameState('setup');
 
-  const handleSetupComplete = (players, trackActions = true) => {
+  const handleSetupComplete = (players, trackActions = true, trackVp = false) => {
+    console.log('App: handleSetupComplete called with', players);
     // Initialize players with 2 agents
-    const playersWithAgents = players.map(p => ({
+    // CRITICAL: Filter again to ensure no empty players leak in
+    const filteredPlayers = players.filter(p => p.name && p.name.trim() !== '');
+
+    const playersWithAgents = filteredPlayers.map(p => ({
       ...p,
       agents: 2,
       swordmaster: false,
-      revealed: false
+      revealed: false,
+      vp: 0 // Initialize VP
     }));
 
     setGameData({
       players: playersWithAgents,
       round: 1,
       phase: 'Agent',
-      history: []
+      history: [],
+      alliances: { 'Emperor': null, 'Spacing Guild': null, 'Bene Gesserit': null, 'Fremen': null }
     });
 
     // Choose mode
-    setGameState(trackActions ? 'active' : 'holding');
+    if (trackVp) {
+      setGameState('vp_tracker');
+    } else {
+      setGameState(trackActions ? 'active' : 'holding');
+    }
     setPastStates([]); // Reset history on new game
+  };
+
+  const resetApp = () => {
+    setShowResetConfirm(true);
+  };
+
+  const performReset = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setGameState('home');
+    setGameData({
+      players: [],
+      round: 1,
+      phase: 'Agent',
+      history: [],
+      alliances: { 'Emperor': null, 'Spacing Guild': null, 'Bene Gesserit': null, 'Fremen': null }
+    });
+    setPastStates([]);
+    setShowResetConfirm(false);
+
+    if (window.location.hash || window.location.search) {
+      window.history.replaceState(null, '', '/');
+    }
   };
 
   const handleUndo = () => {
@@ -178,6 +225,94 @@ function App() {
   const handleGameAction = (actionDetails) => {
     // 1. Save current state for Undo
     setPastStates(prev => [...prev, gameData]);
+
+    const currentRound = gameData.round; // Capture voltage
+
+    // HANDLE VP TRACKING MODE actions
+    if (actionDetails.action === 'VP_ADJUST') {
+      const { points, actionName, category } = actionDetails.details;
+
+      let currentPlayersState = [...gameData.players];
+      let newHistoryEntries = [];
+      let newAlliances = { ...(gameData.alliances || { 'Emperor': null, 'Spacing Guild': null, 'Bene Gesserit': null, 'Fremen': null }) };
+
+      const allianceFactions = ['Emperor', 'Spacing Guild', 'Bene Gesserit', 'Fremen'];
+      const matchedFaction = allianceFactions.find(f => actionName.includes(f));
+
+      // Handle Alliance Stealing Logic
+      if (matchedFaction && actionName.includes('Alliance')) {
+        const currentOwner = newAlliances[matchedFaction];
+
+        if (currentOwner && currentOwner !== actionDetails.playerName) {
+          // Owner loses alliance, -1 VP
+          const ownerIndex = currentPlayersState.findIndex(p => p.name === currentOwner);
+          if (ownerIndex !== -1) {
+            const ownerBefore = currentPlayersState[ownerIndex].vp || 0;
+            const ownerAfter = ownerBefore - 1;
+            currentPlayersState[ownerIndex] = { ...currentPlayersState[ownerIndex], vp: ownerAfter };
+
+            newHistoryEntries.push({
+              timestamp: actionDetails.timestamp, // Share timestamp loosely
+              playerName: currentOwner,
+              action: `Lost ${matchedFaction} Alliance (-1 VP)`,
+              round: currentRound,
+              rawDetails: {
+                category: 'Reputation',
+                actionName: `Lost ${matchedFaction} Alliance`,
+                points: -1,
+                vpBefore: ownerBefore,
+                vpAfter: ownerAfter
+              }
+            });
+          }
+        }
+        // Set new owner
+        newAlliances[matchedFaction] = actionDetails.playerName;
+      }
+
+      // Apply primary action
+      const targetIndex = currentPlayersState.findIndex(p => p.name === actionDetails.playerName);
+      if (targetIndex !== -1) {
+        const vpBefore = currentPlayersState[targetIndex].vp || 0;
+        const vpAfter = vpBefore + points;
+
+        // Handle Upgrades logic tracking
+        let upgradesUpdate = {};
+        if (actionName === 'High Council') upgradesUpdate.highCouncil = true;
+        if (actionName === 'Swordmaster') upgradesUpdate.swordmaster = true;
+        if (actionName === 'Sardaukar' || actionName === 'Acquire Sardaukar') {
+          upgradesUpdate.sardaukar = (currentPlayersState[targetIndex].sardaukar || 0) + 1;
+        }
+
+        currentPlayersState[targetIndex] = {
+          ...currentPlayersState[targetIndex],
+          vp: vpAfter,
+          ...upgradesUpdate
+        };
+
+        newHistoryEntries.push({
+          ...actionDetails,
+          action: `${actionName} (${points >= 0 ? '+' : ''}${points} VP)`,
+          round: currentRound,
+          rawDetails: {
+            category,
+            actionName,
+            points,
+            vpBefore,
+            vpAfter
+          }
+        });
+      }
+
+      setGameData(prev => ({
+        ...prev,
+        players: currentPlayersState,
+        alliances: newAlliances,
+        history: [...prev.history, ...newHistoryEntries]
+      }));
+      return;
+    }
+
 
     let newPhase = gameData.phase;
     let newRound = gameData.round;
@@ -230,12 +365,29 @@ function App() {
       players: updatedPlayers,
       round: newRound,
       phase: newPhase,
-      history: [...prev.history, actionDetails]
+      history: [...prev.history, { ...actionDetails, round: currentRound }]
     }));
   };
 
   // Transition to Scoring Phase
   const handleEndGame = () => {
+    // IF we are in VP Tracking mode, we already have the scores.
+    // So we can skip the manual scoring view and go straight to finalize.
+    if (gameState === 'vp_tracker') {
+      console.log('App: Auto-finalizing game from VP Tracker data');
+
+      // Construct collectedScores object { playerId: scoreString }
+      // Uses "id" from the player object (which comes from setup)
+      const collectedScores = {};
+      gameData.players.forEach(p => {
+        collectedScores[p.id] = (p.vp || 0).toString();
+      });
+
+      handleFinalizeGame(collectedScores);
+      return;
+    }
+
+    console.log('App: Transitioning to scoring phase');
     setGameState('scoring');
   };
 
@@ -267,37 +419,68 @@ function App() {
     // We want to save IDs. availablePlayers map has {id, name}.
 
     // Tab 1: Score Data
-    const scoreHeaders = ['Game ID', 'Game Date', 'Player ID', 'Leader ID', 'Victory Points'];
-    const scoreRows = playerScores.map(p => {
+    const scoreHeaders = ['Game ID', 'Game Date', 'Player ID', 'Player Order', 'Leader ID', 'Victory Points', 'Player Colour'];
+
+    // Find the index of the first player (who goes first) to compute rotated turn order.
+    // playerScores preserves the slot order (1→2→3→4). The first player gets order 1,
+    // then the remaining players follow in slot sequence.
+    const firstPlayerIndex = playerScores.findIndex(p => p.isFirstPlayer);
+
+    const scoreRows = playerScores.map((p, index) => {
       const playerObj = availablePlayers.find(ap => ap.name === p.name);
-      const playerId = playerObj ? playerObj.id : p.name; // Fallback to name if not found? Or p.id? p.id in gameData is internal 1,2,3,4.
+      // Save as integer player ID; fall back to p.id (internal setup index) if lookup fails
+      const playerId = playerObj ? parseInt(playerObj.id, 10) : p.id;
+
+      // Rotate: player at firstPlayerIndex gets order 1, others follow in slot sequence
+      let playerOrder;
+      if (firstPlayerIndex === -1) {
+        playerOrder = index + 1; // fallback: no first player set
+      } else {
+        playerOrder = ((index - firstPlayerIndex + playerScores.length) % playerScores.length) + 1;
+      }
 
       return [
-        timestamp, // Game ID
-        displayDate, // Game Date
-        playerId,   // Player ID
-        p.leader,   // Leader ID
-        p.vp
+        timestamp,        // Game ID
+        displayDate,      // Game Date
+        playerId,         // Player ID (integer)
+        playerOrder,      // Player Order (1 = goes first, rotated from isFirstPlayer)
+        p.leader,         // Leader ID
+        p.vp,             // Victory Points
+        p.colour || ''    // Player Colour
       ];
     });
 
-    // Tab 2: Log Data
-    const logHeaders = ['Game ID', 'Game Date', 'Round', 'Player ID', 'Action', 'Timestamp'];
-    const logRows = gameData.history.map(h => {
-      const playerObj = availablePlayers.find(ap => ap.name === h.playerName);
-      const playerId = playerObj ? playerObj.id : h.playerName;
+    // Tab 2: Action Logs removed - VP Logs tab covers this use case
 
-      return [
-        timestamp,
-        displayDate,
-        h.round,
-        playerId,
-        h.action,
-        h.timestamp
-      ];
-    });
+    // Tab 3: VP Logs (Granular VP Tracking) - SORTED DESCENDING (Newest First)
+    const vpLogHeaders = ['Game ID', 'Game Date', 'Round', 'Player ID', 'Leader ID', 'Category', 'Action Name', 'VP Change', 'VP Before', 'VP After', 'Timestamp'];
+    const vpLogRows = gameData.history
+      .filter(h => h.rawDetails && h.action.includes('VP')) // Filter to only VP actions
+      .reverse() // Newest actions first!
+      .map(h => {
+        const playerObj = availablePlayers.find(ap => ap.name === h.playerName);
+        const playerId = playerObj ? playerObj.id : h.playerName;
 
-    // 3. Send to Backend (Scores are always saved, Logs only if tracked)
+        // Find leader for this player
+        const playerInGame = gameData.players.find(p => p.name === h.playerName);
+        const leaderId = playerInGame ? playerInGame.leader : '';
+
+        return [
+          timestamp,      // Game ID
+          displayDate,    // Game Date
+          h.round || 1,   // Round
+          playerId,       // Player ID
+          leaderId,       // Leader ID
+          h.rawDetails.category,
+          h.rawDetails.actionName,
+          h.rawDetails.points,
+          h.rawDetails.vpBefore !== undefined ? h.rawDetails.vpBefore : '',
+          h.rawDetails.vpAfter !== undefined ? h.rawDetails.vpAfter : '',
+          h.timestamp
+        ];
+      });
+
+    // 3. Send to Backend (Scores and VP Logs only)
     try {
       const sheetResp = await fetch('/api/save-to-sheet', {
         method: 'POST',
@@ -306,8 +489,8 @@ function App() {
           spreadsheetId: sheetId,
           scoreHeaders,
           scoreRows,
-          logHeaders,
-          logRows
+          vpLogHeaders,
+          vpLogRows
         })
       });
 
@@ -329,18 +512,18 @@ function App() {
       players: [],
       round: 1,
       phase: 'Agent',
-      history: []
+      history: [],
+      alliances: { 'Emperor': null, 'Spacing Guild': null, 'Bene Gesserit': null, 'Fremen': null }
     });
   };
 
   return (
     <>
-      <div>
-        <h1>DUNE: IMPERIUM <br /> TRACKER</h1>
-      </div>
+      {/* Header removed as requested */}
 
       {gameState === 'home' && (
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h1 style={{ marginBottom: '1.5rem', fontSize: '2.5rem' }}>DUNE: UPRISING TRACKER</h1>
           <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)' }}>
             Track your spice, influence, and victory.
           </p>
@@ -348,9 +531,53 @@ function App() {
             New Game
           </button>
 
+          <div style={{ marginTop: '1.5rem' }}>
+            <button
+              onClick={resetApp}
+              className="btn-secondary"
+              style={{
+                background: '#333',
+                color: '#fff',
+                fontSize: '0.8rem',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '8px',
+                border: '1px solid #444'
+              }}
+            >
+              Reset Application State
+            </button>
+          </div>
+
           <RecentGamesList leaders={leaders} availablePlayers={availablePlayers} />
         </div>
       )}
+
+      {/* Persistent Reset Button for Developers/Users to escape stuck states */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        zIndex: 9999,
+        opacity: 0.8
+      }}>
+        <button
+          onClick={resetApp}
+          style={{
+            background: '#800',
+            border: '2px solid #500',
+            color: '#fff',
+            fontSize: '0.7rem',
+            padding: '5px 12px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            textTransform: 'uppercase',
+            fontWeight: 'bold',
+            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+          }}
+        >
+          Reset
+        </button>
+      </div>
 
       {gameState === 'setup' && (
         <SetupWizard onComplete={handleSetupComplete} leaders={leaders} availablePlayers={availablePlayers} />
@@ -363,6 +590,19 @@ function App() {
           onEndGame={handleEndGame}
           onUndo={handleUndo}
           canUndo={pastStates.length > 0}
+        />
+      )}
+
+      {gameState === 'vp_tracker' && (
+        <VPTrackingView
+          players={gameData.players}
+          alliances={gameData.alliances}
+          round={gameData.round}
+          vpActions={vpActions}
+          onAction={handleGameAction}
+          onRoundChange={(newRound) => setGameData(prev => ({ ...prev, round: newRound }))}
+          onUndo={handleUndo}
+          onEndGame={handleEndGame}
         />
       )}
 
@@ -414,6 +654,16 @@ function App() {
           onCancel={() => setGameState('active')}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={showResetConfirm}
+        title="Reset Application?"
+        message="This will clear all current game data and return to the home screen. This action cannot be undone."
+        confirmText="Reset Everything"
+        isDanger={true}
+        onConfirm={performReset}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </>
   )
 }

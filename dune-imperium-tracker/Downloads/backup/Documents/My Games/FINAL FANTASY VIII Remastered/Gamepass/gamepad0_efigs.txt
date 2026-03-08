@@ -1,0 +1,14 @@
+select	1
+cancel	2
+menu	3
+up	13
+left	14
+right	15
+down	16
+pause	9
+card	4
+rot_l	5
+rot_r	6
+misc	11
+switch	12
+toggle	10

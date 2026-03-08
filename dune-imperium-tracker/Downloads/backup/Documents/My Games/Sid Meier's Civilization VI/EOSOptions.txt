@@ -1,0 +1,35 @@
+;Altering this number will cause the app to overwrite this file with defaults
+Version 1
+
+[EOS_Logging]
+;No description
+EnableCoreLogs 0
+
+;No description
+EnableP2PLogs 0
+
+;No description
+EnableOwnershipLogs 0
+
+;No description
+EnableConnectionLogs 0
+
+;No description
+EnablePacketLogs 0
+
+;No description
+EnableTimeoutLogs 0
+
+;No description
+EnableLobbyLogs 0
+
+;No description
+EnableOverlayLogs 0
+
+[Lobby]
+;Maximum time to perform a full search on the lobby list screen.  1 < SearchDuration < 60.
+SearchDuration 15
+
+;Lobby searching will stop when at least this many games have been found.  10 < MaxLobbiesToList < 100.
+MaxLobbiesToList 50
+

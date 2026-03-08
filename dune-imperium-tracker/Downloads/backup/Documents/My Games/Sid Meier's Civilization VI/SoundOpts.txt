@@ -1,0 +1,25 @@
+;Altering this number will cause the app to overwrite this file with defaults
+Version 5
+
+[Sound]
+;Master volume of all game sounds and music, except voice chat (0-100)
+Master Volume 37
+
+;Volume of incoming voice chat (0-100)
+Chat Volume 100
+
+;Volume of game music (0-100)
+Music Volume 100
+
+;Volume of game sound effects (0-100)
+SFX Volume 100
+
+;Volume of game's environmental ambience in 3D mode (0-100)
+Ambience Volume 100
+
+;Volume of speech by leaders (0-100)
+Speech Volume 100
+
+;Mute the game when it loses focus (1=yes, 0=no)
+Mute Focus 1
+

@@ -1,114 +1,89 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
     const [step, setStep] = useState(1);
-    const [draftLeaders, setDraftLeaders] = useState([]); // Array of 7 random leaders
+    const [draftLeaders, setDraftLeaders] = useState([]);
     const [players, setPlayers] = useState([
-        { id: 1, name: '', leader: '', isFirstPlayer: false },
-        { id: 2, name: '', leader: '', isFirstPlayer: false },
-        { id: 3, name: '', leader: '', isFirstPlayer: false },
-        { id: 4, name: '', leader: '', isFirstPlayer: false },
+        { id: 1, name: '', leader: '', isFirstPlayer: false, colour: '' },
+        { id: 2, name: '', leader: '', isFirstPlayer: false, colour: '' },
+        { id: 3, name: '', leader: '', isFirstPlayer: false, colour: '' },
+        { id: 4, name: '', leader: '', isFirstPlayer: false, colour: '' },
     ]);
 
+    const PLAYER_COLOURS = [
+        { name: 'Red', hex: '#c0392b', border: '#e74c3c', text: '#fff' },
+        { name: 'Blue', hex: '#2471a3', border: '#5dade2', text: '#fff' },
+        { name: 'Green', hex: '#1e8449', border: '#52be80', text: '#fff' },
+        { name: 'Yellow', hex: '#b7950b', border: '#f4d03f', text: '#fff' },
+    ];
+
+    // Index of the next player waiting to be assigned a colour
+    const colourAssignIndex = players.filter(p => p.name.trim() !== '' && p.colour !== '').length;
+
+    const activePlayers = players.filter(p => p.name && p.name.trim() !== '');
 
     const handlePlayerChange = (id, field, value) => {
         setPlayers(players.map(p => p.id === id ? { ...p, [field]: value } : p));
     };
 
     const handleNameSelect = (name) => {
-        // Is this name already taken?
         const isTaken = players.some(p => p.name === name);
         if (isTaken) {
-            // Toggle off: find who has it and clear it
             const existingPlayerIndex = players.findIndex(p => p.name === name);
             if (existingPlayerIndex !== -1) {
                 handlePlayerChange(players[existingPlayerIndex].id, 'name', '');
             }
             return;
         }
-
-        // Find first empty slot
         const firstEmpty = players.find(p => p.name === '');
         if (firstEmpty) {
             handlePlayerChange(firstEmpty.id, 'name', name);
         }
     };
 
-    const goToLeaders = () => {
+    const goToColours = () => {
         const activeInfo = players.filter(p => p.name.trim() !== '');
         if (activeInfo.length < 2) {
             alert("Need at least 2 players!");
             return;
         }
+        // Reset any previously assigned colours when going back to this step
+        setPlayers(players.map(p => ({ ...p, colour: '' })));
+        setStep(2);
+    };
 
+    const goToLeaders = () => {
         if (!leaders || leaders.length === 0) {
             alert("Loading leaders... please wait.");
             return;
         }
-
-        // Randomly select 7 leaders for the draft
         const shuffled = [...leaders].sort(() => 0.5 - Math.random());
         setDraftLeaders(shuffled.slice(0, 7));
-
-        setStep(2);
+        setStep(3);
     };
 
-    // ... (rest of component) ...
+    const handleColourSelect = (colourName) => {
+        const activePlayers = players.filter(p => p.name.trim() !== '');
+        // Guard: colour already taken
+        if (activePlayers.some(p => p.colour === colourName)) return;
+        // Guard: all players already have a colour
+        if (colourAssignIndex >= activePlayers.length) return;
+        const targetPlayer = activePlayers[colourAssignIndex];
+        handlePlayerChange(targetPlayer.id, 'colour', colourName);
+    };
 
-    const renderNameSelection = () => (
-        <div style={{ textAlign: 'center' }}>
-            <h2 style={{ color: 'var(--color-accent-gold)', marginBottom: '1rem' }}>Select Players</h2>
-            <p style={{ marginBottom: '2rem', color: '#aaa' }}>Select who is playing today.</p>
-
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                gap: '1rem',
-                marginBottom: '2rem'
-            }}>
-                {availablePlayers.map(pObj => {
-                    const name = pObj.name;
-                    const isSelected = players.some(p => p.name === name);
-                    return (
-                        <button
-                            key={pObj.id}
-                            onClick={() => handleNameSelect(name)}
-                            style={{
-                                padding: '1rem',
-                                fontSize: '1rem',
-                                backgroundColor: isSelected ? 'var(--color-accent-gold)' : '#333',
-                                color: isSelected ? '#000' : '#fff',
-                                border: isSelected ? '2px solid #fff' : '1px solid #555',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                fontFamily: 'var(--font-heading)',
-                                opacity: isSelected ? 1 : 0.8
-                            }}
-                        >
-                            {name}
-                        </button>
-                    )
-                })}
-            </div>
-        </div>
-    );
-
+    const resetColours = () => {
+        setPlayers(players.map(p => ({ ...p, colour: '' })));
+    };
 
     const handleLeaderSelect = (leaderId) => {
-        // Is this leader already assigned?
         const assignedPlayer = players.find(p => p.leader === leaderId);
-
         if (assignedPlayer) {
-            // Unassign (toggle off)
             handlePlayerChange(assignedPlayer.id, 'leader', '');
             return;
         }
-
-        // Assign to first active player without a leader
         const activePlayersList = players.filter(p => p.name.trim() !== '');
         const playerNeedingLeader = activePlayersList.find(p => !p.leader);
-
         if (playerNeedingLeader) {
             handlePlayerChange(playerNeedingLeader.id, 'leader', leaderId);
         }
@@ -121,27 +96,19 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
         })));
     };
 
-    const activePlayers = players.filter(p => p.name.trim() !== '');
     const selectedFirstPlayerId = players.find(p => p.isFirstPlayer)?.id || '';
+    const firstPlayerSelected = players.some(p => p.isFirstPlayer);
 
-    const finishSetup = () => {
-        if (activePlayers.length < 2) {
-            alert("Need at least 2 players!");
+    const handleStartGame = () => {
+        if (activePlayers.some(p => !p.leader)) {
+            alert("All players must choose a leader!");
             return;
         }
-        // Check if all active players have a leader
-        const missingLeader = activePlayers.some(p => !p.leader);
-        if (missingLeader) {
-            alert("Every player needs a leader!");
+        if (!firstPlayerSelected) {
+            alert("Please select who goes first!");
             return;
         }
-
-        if (!players.some(p => p.isFirstPlayer)) {
-            alert("Please select a First Player!");
-            return;
-        }
-
-        onComplete(activePlayers);
+        onComplete(activePlayers, false, true);
     };
 
     return (
@@ -163,7 +130,6 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                     }}>
                         {availablePlayers.map(pObj => {
                             const name = pObj.name;
-                            // allocated to which player?
                             const allocatedPlayer = players.find(p => p.name === name);
                             const isSelected = !!allocatedPlayer;
 
@@ -202,24 +168,165 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                         </div>
                         <button
                             className="btn-primary"
-                            onClick={goToLeaders}
+                            onClick={goToColours}
                             disabled={activePlayers.length < 2}
                             style={{ opacity: activePlayers.length < 2 ? 0.5 : 1 }}
                         >
-                            Next: Leaders
+                            Next: Choose Colours
                         </button>
                     </div>
                 </div>
             )}
 
-            {step === 2 && (
+            {step === 2 && (() => {
+                const allColoursAssigned = activePlayers.length > 0 && activePlayers.every(p => p.colour !== '');
+                return (
+                    <div>
+                        <h3>Step 2: Choose Player Colours</h3>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
+                            Each click assigns the next player's colour. Colours cannot be shared.
+                        </p>
+
+                        {/* Assignment progress */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            {activePlayers.map((p, idx) => (
+                                <div key={p.id} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                    marginBottom: '0.5rem',
+                                    padding: '0.5rem 0.75rem',
+                                    borderRadius: '6px',
+                                    background: '#222',
+                                    border: '1px solid #333'
+                                }}>
+                                    <span style={{ fontWeight: 'bold', minWidth: '80px' }}>{p.name}</span>
+                                    {p.colour ? (
+                                        <span style={{
+                                            display: 'inline-block',
+                                            padding: '0.2rem 0.75rem',
+                                            borderRadius: '4px',
+                                            backgroundColor: PLAYER_COLOURS.find(c => c.name === p.colour)?.hex || '#555',
+                                            color: '#fff',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.9rem'
+                                        }}>{p.colour}</span>
+                                    ) : (
+                                        <span style={{ color: '#666', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                                            {idx === colourAssignIndex ? '← pick a colour' : 'waiting...'}
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Colour buttons */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '1rem',
+                            marginBottom: '1.5rem'
+                        }}>
+                            {PLAYER_COLOURS.map(colour => {
+                                const isTaken = activePlayers.some(p => p.colour === colour.name);
+                                const takenBy = activePlayers.find(p => p.colour === colour.name);
+                                const isDisabled = isTaken || allColoursAssigned;
+                                return (
+                                    <button
+                                        key={colour.name}
+                                        onClick={() => handleColourSelect(colour.name)}
+                                        disabled={isDisabled}
+                                        style={{
+                                            padding: '1.5rem',
+                                            fontSize: '1.3rem',
+                                            fontWeight: 'bold',
+                                            fontFamily: 'var(--font-heading)',
+                                            backgroundColor: isTaken ? '#2a2a2a' : colour.hex,
+                                            color: isTaken ? '#555' : colour.text,
+                                            border: isTaken
+                                                ? `2px solid #444`
+                                                : `2px solid ${colour.border}`,
+                                            borderRadius: '10px',
+                                            cursor: isDisabled ? 'default' : 'pointer',
+                                            opacity: isDisabled ? 0.45 : 1,
+                                            transition: 'transform 0.1s, opacity 0.2s',
+                                            boxShadow: isTaken ? 'none' : `0 4px 15px ${colour.hex}55`,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '0.3rem'
+                                        }}
+                                    >
+                                        {colour.name}
+                                        {takenBy && (
+                                            <span style={{ fontSize: '0.75rem', fontWeight: 'normal' }}>
+                                                ({takenBy.name})
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <button
+                                onClick={() => setStep(1)}
+                                style={{
+                                    padding: '0.8rem 1.5rem',
+                                    fontSize: '1rem',
+                                    backgroundColor: '#333',
+                                    color: '#fff',
+                                    border: '1px solid #555',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Back
+                            </button>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button
+                                    onClick={resetColours}
+                                    style={{
+                                        padding: '0.8rem 1.5rem',
+                                        fontSize: '1rem',
+                                        backgroundColor: '#444',
+                                        color: '#fff',
+                                        border: '1px solid #666',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Reset
+                                </button>
+                                <button
+                                    onClick={goToLeaders}
+                                    disabled={!allColoursAssigned}
+                                    style={{
+                                        padding: '0.8rem 1.5rem',
+                                        fontSize: '1rem',
+                                        backgroundColor: allColoursAssigned ? 'var(--color-accent-gold)' : '#555',
+                                        color: allColoursAssigned ? '#000' : '#999',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        cursor: allColoursAssigned ? 'pointer' : 'not-allowed',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    Next: Leaders →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
+            {step === 3 && (
                 <div>
-                    <h3>Step 2: Assign Leaders</h3>
+                    <h3>Step 3: Assign Leaders</h3>
                     <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
                         Select a leader for each player (Draft Pool of 7).
                     </p>
 
-                    {/* Leader Grid */}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
@@ -235,8 +342,6 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                                 <button
                                     key={leader.id}
                                     onClick={() => handleLeaderSelect(leader.id)}
-                                    // Disable if not selected AND everyone already has a leader (unless we want to support swapping, but simple fill is better)
-                                    // Actually, if everyone has a leader, we can't assign new ones. Toggle only.
                                     disabled={!isSelected && isFullyAssigned}
                                     style={{
                                         padding: '1rem',
@@ -269,8 +374,10 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                     </div>
 
                     <div style={{ marginTop: '2rem', padding: '1rem', borderTop: '1px solid #333' }}>
-                        <h3 style={{ color: 'var(--color-accent-gold)', marginBottom: '1rem', textAlign: 'center' }}>
-                            Who goes first?
+                        <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                            <span style={{ color: 'var(--color-accent-gold)' }}>Who goes first?</span>
+                            {' '}
+                            <span style={{ color: '#e55', fontSize: '0.85rem' }}>* required</span>
                         </h3>
 
                         <div style={{
@@ -288,27 +395,32 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                                         style={{
                                             padding: '1rem',
                                             fontSize: '1rem',
-                                            backgroundColor: isSelected ? 'var(--color-accent-gold)' : '#333',
-                                            color: isSelected ? '#000' : '#fff',
-                                            border: isSelected ? '2px solid #fff' : '1px solid #555',
+                                            backgroundColor: isSelected ? '#c0392b' : '#333',
+                                            color: '#fff',
+                                            border: isSelected ? '2px solid #e74c3c' : '1px solid #555',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
                                             fontWeight: 'bold',
                                             fontFamily: 'var(--font-heading)',
-                                            opacity: 1
                                         }}
                                     >
                                         {p.name}
-                                        {isSelected && " (1st)"}
+                                        {isSelected && ' 🥇'}
                                     </button>
                                 );
                             })}
                         </div>
+
+                        {!firstPlayerSelected && (
+                            <p style={{ color: '#e55', fontSize: '0.85rem', textAlign: 'center', marginTop: '0.5rem' }}>
+                                ⚠ Select who goes first before starting
+                            </p>
+                        )}
                     </div>
 
                     <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
                         <button
-                            onClick={() => setStep(1)}
+                            onClick={() => setStep(2)}
                             style={{
                                 padding: '0.8rem 1.5rem',
                                 fontSize: '1rem',
@@ -324,8 +436,6 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             <button
                                 onClick={() => {
-                                    // Re-roll drafts? Just clear selection?
-                                    // For simplicity, just clearing draft leaders
                                     const shuffled = [...leaders].sort(() => 0.5 - Math.random());
                                     setDraftLeaders(shuffled.slice(0, 7));
                                     setPlayers(players.map(p => ({ ...p, leader: '' })));
@@ -344,105 +454,36 @@ export default function SetupWizard({ onComplete, leaders, availablePlayers }) {
                             </button>
 
                             <button
-                                onClick={() => {
-                                    // Validate all have leaders
-                                    const activePlayers = players.filter(p => p.name !== '');
-                                    if (activePlayers.some(p => !p.leader)) {
-                                        alert("All players must choose a leader!");
-                                        return;
-                                    }
-                                    setStep(3); // Go to Mode Selection
-                                }}
+                                onClick={handleStartGame}
+                                disabled={!firstPlayerSelected}
                                 style={{
                                     padding: '0.8rem 1.5rem',
                                     fontSize: '1rem',
-                                    backgroundColor: 'var(--color-accent-gold)',
-                                    color: '#000',
+                                    backgroundColor: firstPlayerSelected ? 'var(--color-accent-gold)' : '#555',
+                                    color: firstPlayerSelected ? '#000' : '#999',
                                     border: 'none',
                                     borderRadius: '4px',
-                                    cursor: 'pointer',
+                                    cursor: firstPlayerSelected ? 'pointer' : 'not-allowed',
                                     fontWeight: 'bold'
                                 }}
                             >
-                                Next
+                                Start Game
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {step === 3 && (
-                <div style={{ textAlign: 'center', animation: 'fadeIn 0.3s' }}>
-                    <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-accent-gold)', marginBottom: '2rem' }}>
-                        Select Game Mode
-                    </h2>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
-                        <button
-                            onClick={() => onComplete(players, true)} // Track Actions = True
-                            style={{
-                                padding: '2rem',
-                                backgroundColor: '#222',
-                                border: '2px solid var(--color-accent-gold)',
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '1rem',
-                                transition: 'transform 0.2s',
-                            }}
-                            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-5px)'}
-                            onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-                        >
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-accent-gold)' }}>Track Actions</span>
-                            <span style={{ fontSize: '0.9rem', color: '#aaa' }}>
-                                Full dashboard. Track agents, board spaces, combat, and detailed game history.
-                            </span>
-                        </button>
-
-                        <button
-                            onClick={() => onComplete(players, false)} // Track Actions = False (Simple)
-                            style={{
-                                padding: '2rem',
-                                backgroundColor: '#222',
-                                border: '2px solid #666',
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '1rem',
-                                transition: 'transform 0.2s',
-                            }}
-                            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-5px)'}
-                            onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-                        >
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>Simple Mode</span>
-                            <span style={{ fontSize: '0.9rem', color: '#aaa' }}>
-                                Just play. App holds the state until you are ready to enter scores at the end.
-                            </span>
-                        </button>
-                    </div>
-
-                    <div style={{ marginTop: '3rem', textAlign: 'left' }}>
-                        <button
-                            onClick={() => setStep(2)}
-                            style={{
-                                padding: '0.8rem 1.5rem',
-                                fontSize: '1rem',
-                                backgroundColor: '#333',
-                                color: '#fff',
-                                border: '1px solid #555',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            Back
-                        </button>
-                    </div>
-                </div>
-            )}
+            <div style={{
+                position: 'fixed',
+                bottom: '5px',
+                right: '5px',
+                fontSize: '0.7rem',
+                color: '#444',
+                pointerEvents: 'none'
+            }}>
+                v1.4-FIRST-PLAYER-REQUIRED
+            </div>
         </div>
     );
 }

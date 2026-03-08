@@ -1,0 +1,110 @@
+Version 66
+{Video
+	Adapter "NVIDIA GeForce GTX 1070"
+	Monitor 0
+	Windowed 0
+	FullscreenBorderless 0
+	Resolution 1920 1080
+	PrimaryScaling 1.000000
+	SecondaryScaling 1.000000
+	VSync 1
+	TextureQuality 1
+	TextureFiltering 0
+	PosX 0
+	PosY 0
+}
+{Graphics
+	Version 1.0.4
+	{Platform
+		EPlatform 0
+	}
+	{HDR10
+		Enabled 0
+	}
+	{Texture
+		MaxAnisotropy 16
+		LODBias 0
+		MaxLOD 0
+	}
+	{DrawDistance
+		DrawDistanceMultiplier 2.000000
+		MIDrawDistanceMultiplier 1.750000
+	}
+	{MassInstancing
+		TrimRatio 0.800000
+	}
+	{Terrain
+	}
+	{Shadows
+		MaxSliceCount 4
+		Size 4
+		MaxDist 10000.000000
+		DLightContributionCullingThresholdS0 0.100000
+		DLightContributionCullingThresholdS1 0.100000
+		DLightContributionCullingThresholdS2 0.100000
+		DLightContributionCullingThresholdS3 0.100000
+		OmniContributionCullingThreshold 0.000000
+	}
+	{SSRaytracedShadows
+		Enabled 1
+		Quality 3
+	}
+	{Water
+		FFTSize 512
+	}
+	{VolumetricClouds
+		Quality 3
+	}
+	{VolumetricLights
+		Enabled 1
+		Quality 3
+	}
+	{LightShafts
+		Enabled 1
+		Quality 3
+	}
+	{SSR
+		Enabled 1
+		HalfRes 0
+		Quality 3
+	}
+	{SSAO
+		Enabled 1
+		Quality 3
+	}
+	{SSSSS
+		Enabled 1
+		Quality 3
+	}
+	{AA
+		Enabled 1
+		Type 2
+		Quality 3
+	}
+	{Bloom
+		Enabled 1
+		Quality 3
+	}
+	{DOF
+		Enabled 1
+		Quality 3
+	}
+	{MotionBlur
+		Enabled 1
+		Quality 3
+	}
+	{PostProcess
+		Enabled 1
+		EyeAdaptation 1
+		ColorGrading 1
+		Sharpen 1
+		Fringe 1
+		LensDistortion 1
+		Dirt 1
+		LensFlare 1
+		FilmGrain 1
+		Vignette 1
+		LensBlurMultiplier 1.000000
+		FringeMultiplier 1.000000
+	}
+}

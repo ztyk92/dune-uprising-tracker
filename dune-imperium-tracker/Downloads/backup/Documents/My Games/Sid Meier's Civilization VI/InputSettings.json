@@ -1,0 +1,534 @@
+{
+    "Alert": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_V"
+        },
+        {}
+    ],
+    "Attack": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_A"
+        },
+        {}
+    ],
+    "AutoExplore": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_E"
+        },
+        {}
+    ],
+    "Back": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_B"
+        },
+        {}
+    ],
+    "CameraPan": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_RTHUMB_AXIS"
+        },
+        {}
+    ],
+    "CameraPanDown": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_DOWN"
+        },
+        {}
+    ],
+    "CameraPanLeft": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_LEFT"
+        },
+        {}
+    ],
+    "CameraPanRight": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_RIGHT"
+        },
+        {}
+    ],
+    "CameraPanUp": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_UP"
+        },
+        {}
+    ],
+    "CapitalCity": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_BACKSLASH"
+        },
+        {}
+    ],
+    "CivilopediaBack": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_CONTROL+LOC_OPTIONS_KEY_COMMA"
+        },
+        {}
+    ],
+    "CivilopediaForward": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_CONTROL+LOC_OPTIONS_KEY_PERIOD"
+        },
+        {}
+    ],
+    "DeleteUnit": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_DELETE"
+        },
+        {}
+    ],
+    "EndTurn": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_RETURN"
+        },
+        {}
+    ],
+    "FocusNext": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_RSHOULDER"
+        },
+        {}
+    ],
+    "FocusPrev": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_LSHOULDER"
+        },
+        {}
+    ],
+    "Fortify": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F"
+        },
+        {}
+    ],
+    "FortifyUntilHeal": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_H"
+        },
+        {}
+    ],
+    "FoundCity": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_B"
+        },
+        {}
+    ],
+    "InGameMenu": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_START"
+        },
+        {}
+    ],
+    "LensAppeal": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_3"
+        },
+        {}
+    ],
+    "LensContinent": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_2"
+        },
+        {}
+    ],
+    "LensEmpire": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_9"
+        },
+        {}
+    ],
+    "LensGovernment": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_5"
+        },
+        {}
+    ],
+    "LensPolitical": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_6"
+        },
+        {}
+    ],
+    "LensReligion": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_1"
+        },
+        {}
+    ],
+    "LensSettler": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_4"
+        },
+        {}
+    ],
+    "LensTourism": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_7"
+        },
+        {}
+    ],
+    "MenuDown": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_DPAD_DOWN"
+        },
+        {}
+    ],
+    "MenuLeft": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_DPAD_LEFT"
+        },
+        {}
+    ],
+    "MenuRight": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_DPAD_RIGHT"
+        },
+        {}
+    ],
+    "MenuUp": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_DPAD_UP"
+        },
+        {}
+    ],
+    "MoveTo": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_M"
+        },
+        {}
+    ],
+    "NavigateMap": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_LTHUMB_AXIS"
+        },
+        {}
+    ],
+    "NextAction": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_X"
+        },
+        {}
+    ],
+    "NextCity": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_RBRACKET"
+        },
+        {}
+    ],
+    "NextUnit": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_PERIOD"
+        },
+        {}
+    ],
+    "Notifications": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_Y"
+        },
+        {}
+    ],
+    "OnlinePause": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_P"
+        },
+        {}
+    ],
+    "OpenCivilopedia": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F9"
+        },
+        {}
+    ],
+    "OpenMapSearch": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_CONTROL+LOC_OPTIONS_KEY_F"
+        },
+        {}
+    ],
+    "PauseMenu": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_HOME"
+        },
+        {}
+    ],
+    "PrevCity": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_LBRACKET"
+        },
+        {}
+    ],
+    "PrevUnit": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_COMMA"
+        },
+        {}
+    ],
+    "QuickLoad": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F6"
+        },
+        {}
+    ],
+    "QuickSave": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F5"
+        },
+        {}
+    ],
+    "RangedAttack": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_R"
+        },
+        {}
+    ],
+    "Select": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_A"
+        },
+        {}
+    ],
+    "SelectCenterPlot": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_RTHUMB_PRESS"
+        },
+        {}
+    ],
+    "SkipTurn": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_SPACE"
+        },
+        {}
+    ],
+    "Sleep": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_Z"
+        },
+        {}
+    ],
+    "Toggle2DView": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_PLUS"
+        },
+        {}
+    ],
+    "ToggleCityStates": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F2"
+        },
+        {}
+    ],
+    "ToggleCivicsTree": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_C"
+        },
+        {}
+    ],
+    "ToggleEspionage": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F3"
+        },
+        {}
+    ],
+    "ToggleFSMap": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_END"
+        },
+        {}
+    ],
+    "ToggleGovernment": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F7"
+        },
+        {}
+    ],
+    "ToggleGreatPeople": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_O"
+        },
+        {}
+    ],
+    "ToggleGreatWorks": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_W"
+        },
+        {}
+    ],
+    "ToggleGrid": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_G"
+        },
+        {}
+    ],
+    "ToggleRankings": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F1"
+        },
+        {}
+    ],
+    "ToggleReligion": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_L"
+        },
+        {}
+    ],
+    "ToggleResources": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_Q"
+        },
+        {}
+    ],
+    "ToggleTechTree": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_T"
+        },
+        {}
+    ],
+    "ToggleTooltips": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_BACK"
+        },
+        {}
+    ],
+    "ToggleTradeRoutes": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F4"
+        },
+        {}
+    ],
+    "ToggleYield": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_Y"
+        },
+        {}
+    ],
+    "ZoomIn": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_RTRIGGER"
+        },
+        {}
+    ],
+    "ZoomOut": [
+        {
+            "type": "Controller",
+            "data": "LOC_OPTIONS_PAD_LTRIGGER"
+        },
+        {}
+    ],
+    "LensLoyalty": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_8"
+        },
+        {}
+    ],
+    "LensPlague": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_INSERT"
+        },
+        {}
+    ],
+    "LensPower": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_0"
+        },
+        {}
+    ],
+    "ToggleEraProgress": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_NP_DIVIDE"
+        },
+        {}
+    ],
+    "ToggleGovernors": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F10"
+        },
+        {}
+    ],
+    "ToggleTimeline": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_F11"
+        },
+        {}
+    ],
+    "ToggleWorldClimate": [
+        {
+            "type": "KBMouse",
+            "data": "LOC_OPTIONS_KEY_PAGEDOWN"
+        },
+        {}
+    ]
+}

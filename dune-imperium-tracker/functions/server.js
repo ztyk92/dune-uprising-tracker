@@ -49,9 +49,10 @@ async function getSheetsClient() {
 
 
 app.post('/api/save-to-sheet', async (req, res) => {
-    const { spreadsheetId, scoreHeaders, scoreRows, logHeaders, logRows } = req.body;
+    const { spreadsheetId, scoreHeaders, scoreRows, logHeaders, logRows, vpLogHeaders, vpLogRows } = req.body;
 
-    if (!spreadsheetId || !scoreHeaders || !scoreRows || !logHeaders || !logRows) {
+    // Must have at least basic score data
+    if (!spreadsheetId || !scoreHeaders || !scoreRows) {
         return res.status(400).send('Missing required fields (spreadsheetId, headers, rows)');
     }
 
@@ -60,15 +61,23 @@ app.post('/api/save-to-sheet', async (req, res) => {
 
         // 1. Get existing sheets to check names
         const meta = await sheets.spreadsheets.get({ spreadsheetId });
-        const existingTitles = meta.data.sheets.map(s => s.properties.title);
+        const existingSheets = meta.data.sheets;
+        const existingTitles = existingSheets.map(s => s.properties.title);
 
         // 2. Create missing tabs
         const requests = [];
         if (!existingTitles.includes('Scores')) requests.push({ addSheet: { properties: { title: 'Scores' } } });
-        if (!existingTitles.includes('Logs')) requests.push({ addSheet: { properties: { title: 'Logs' } } });
+        // Although user said they created VP Logs, nice to ensure code is robust
+        if (vpLogRows && vpLogRows.length > 0 && !existingTitles.includes('VP Logs')) {
+            requests.push({ addSheet: { properties: { title: 'VP Logs' } } });
+        }
 
         if (requests.length > 0) {
             await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests } });
+
+            // Refresh metadata after creation to get updated sheetIds
+            const newMeta = await sheets.spreadsheets.get({ spreadsheetId });
+            existingSheets.push(...newMeta.data.sheets.filter(s => !existingTitles.includes(s.properties.title)));
         }
 
         // 3. Determine Next Game ID
@@ -81,10 +90,11 @@ app.post('/api/save-to-sheet', async (req, res) => {
             });
             const rows = idData.data.values;
             if (rows && rows.length > 1) { // > 1 to skip header
-                // Get the last row's first column
-                const lastId = parseInt(rows[rows.length - 1][0]);
-                if (!isNaN(lastId)) {
-                    nextGameId = lastId + 1;
+                // Basic ID logic: Find max ID in existing rows
+                // Since 'Scores' is appended, max is likely at bottom, but let's be safe
+                const ids = rows.slice(1).map(r => parseInt(r[0])).filter(n => !isNaN(n));
+                if (ids.length > 0) {
+                    nextGameId = Math.max(...ids) + 1;
                 }
             }
         } catch (e) {
@@ -93,42 +103,164 @@ app.post('/api/save-to-sheet', async (req, res) => {
         console.log(`Assigning Game ID: ${nextGameId}`);
 
         // 4. Prepare Payload with Game ID
-        // The frontend sends [placeholder, date, ...]. We overwrite [0] with nextGameId.
-        const injectedScoreRows = scoreRows.map(row => {
-            const newRow = [...row];
-            newRow[0] = nextGameId;
-            return newRow;
-        });
+        const injectedScoreRows = scoreRows.map(row => { const r = [...row]; r[0] = nextGameId; return r; });
+        const injectedVpLogRows = (vpLogRows && vpLogRows.length > 0) ? vpLogRows.map(row => { const r = [...row]; r[0] = nextGameId; return r; }) : [];
 
-        const injectedLogRows = logRows.map(row => {
-            const newRow = [...row];
-            newRow[0] = nextGameId;
-            return newRow;
-        });
+        // 5. Writes
 
-        // Check if we need to include headers (if new tab)
-        const finalScoreData = (!existingTitles.includes('Scores')) ? [scoreHeaders, ...injectedScoreRows] : injectedScoreRows;
-        const finalLogData = (!existingTitles.includes('Logs')) ? [logHeaders, ...injectedLogRows] : injectedLogRows;
+        // A. SCORES (Header-aware + Head Insertion Strategy - newest rows at top)
+        // Read the actual header row so we can write each value into the correct column
+        // regardless of how the user has arranged columns in the sheet.
+        const scoresSheet = existingSheets.find(s => s.properties.title === 'Scores') ||
+            (await sheets.spreadsheets.get({ spreadsheetId })).data.sheets.find(s => s.properties.title === 'Scores');
 
-        // 5. Append to "Scores" and "Logs"
-        await Promise.all([
-            sheets.spreadsheets.values.append({
-                spreadsheetId,
-                range: 'Scores',
-                valueInputOption: 'USER_ENTERED',
-                insertDataOption: 'INSERT_ROWS',
-                requestBody: { values: finalScoreData }
-            }),
-            sheets.spreadsheets.values.append({
-                spreadsheetId,
-                range: 'Logs',
-                valueInputOption: 'USER_ENTERED',
-                insertDataOption: 'INSERT_ROWS',
-                requestBody: { values: finalLogData }
-            })
-        ]);
+        const promises = [];
 
-        console.log(`Appended data to 'Scores' and 'Logs'.`);
+        if (scoresSheet) {
+            const isNewScoresSheet = !existingTitles.includes('Scores');
+            if (isNewScoresSheet) {
+                // Brand new sheet: write header + rows using our column order
+                promises.push(
+                    sheets.spreadsheets.values.append({
+                        spreadsheetId,
+                        range: 'Scores',
+                        valueInputOption: 'USER_ENTERED',
+                        insertDataOption: 'INSERT_ROWS',
+                        requestBody: { values: [scoreHeaders, ...injectedScoreRows] }
+                    })
+                );
+            } else {
+                // Existing sheet: read actual header row to map columns by name
+                let sheetHeaders = scoreHeaders; // fallback to our own header order
+                try {
+                    const headerResp = await sheets.spreadsheets.values.get({
+                        spreadsheetId,
+                        range: 'Scores!1:1'
+                    });
+                    if (headerResp.data.values && headerResp.data.values[0]) {
+                        sheetHeaders = headerResp.data.values[0];
+                    }
+                } catch (e) {
+                    console.log('Could not read Scores header row, using default column order');
+                }
+
+                console.log('[DEBUG] scoreHeaders from client:', JSON.stringify(scoreHeaders));
+                console.log('[DEBUG] sheetHeaders from sheet:', JSON.stringify(sheetHeaders));
+                console.log('[DEBUG] first injectedScoreRow:', JSON.stringify(injectedScoreRows[0]));
+
+                // Build a value map from our scoreHeaders -> values, then reorder to match sheet
+                // injectedScoreRows uses scoreHeaders column order
+                const mappedRows = injectedScoreRows.map(row => {
+                    // Build a lookup: header name -> value for this row
+                    const valueLookup = {};
+                    scoreHeaders.forEach((h, i) => { valueLookup[h] = row[i]; });
+
+                    // Construct a row in the sheet's actual column order
+                    return sheetHeaders.map(h => {
+                        const val = valueLookup[h];
+                        // Ensure integers are written as numbers, not strings
+                        if (h === 'Player Order' || h === 'Player ID') {
+                            return val !== undefined ? parseInt(val, 10) : '';
+                        }
+                        return val !== undefined ? val : '';
+                    });
+                });
+
+                console.log('[DEBUG] first mappedRow:', JSON.stringify(mappedRows[0]));
+
+                // Insert empty rows at top (index 1, below header)
+                const scoresSheetId = scoresSheet.properties.sheetId;
+                await sheets.spreadsheets.batchUpdate({
+                    spreadsheetId,
+                    requestBody: {
+                        requests: [{
+                            insertDimension: {
+                                range: {
+                                    sheetId: scoresSheetId,
+                                    dimension: 'ROWS',
+                                    startIndex: 1,
+                                    endIndex: 1 + mappedRows.length
+                                },
+                                inheritFromBefore: false
+                            }
+                        }]
+                    }
+                });
+                promises.push(
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId,
+                        range: 'Scores!A2',
+                        valueInputOption: 'USER_ENTERED',
+                        requestBody: { values: mappedRows }
+                    })
+                );
+            }
+        }
+
+        // B. VP LOGS (Head Insertion Strategy)
+        if (injectedVpLogRows.length > 0) {
+            // Find properties for 'VP Logs' to get sheetId
+            const vpSheet = existingSheets.find(s => s.properties.title === 'VP Logs') ||
+                (await sheets.spreadsheets.get({ spreadsheetId })).data.sheets.find(s => s.properties.title === 'VP Logs');
+
+            if (vpSheet) {
+                // If it's a BRAND NEW sheet (just created or empty), we must write the header.
+                // Checking if it was just created by looking at existingTitles from start of request
+                // heuristic: if !existingTitles includes 'VP Logs', it's new.
+
+                const isNewSheet = !existingTitles.includes('VP Logs');
+
+                if (isNewSheet) {
+                    // Just append headers + rows
+                    const finalVpLogData = [vpLogHeaders, ...injectedVpLogRows];
+                    promises.push(
+                        sheets.spreadsheets.values.append({
+                            spreadsheetId,
+                            range: 'VP Logs',
+                            valueInputOption: 'USER_ENTERED',
+                            insertDataOption: 'INSERT_ROWS',
+                            requestBody: { values: finalVpLogData }
+                        })
+                    );
+                } else {
+                    // Existing sheet: INSERT ROWS AT TOP (Index 1, below header)
+                    const sheetId = vpSheet.properties.sheetId;
+
+                    // a) Insert empty rows at index 1
+                    await sheets.spreadsheets.batchUpdate({
+                        spreadsheetId,
+                        requestBody: {
+                            requests: [{
+                                insertDimension: {
+                                    range: {
+                                        sheetId: sheetId,
+                                        dimension: 'ROWS',
+                                        startIndex: 1,
+                                        endIndex: 1 + injectedVpLogRows.length
+                                    },
+                                    inheritFromBefore: false
+                                }
+                            }]
+                        }
+                    });
+
+                    // b) Write data into those rows
+                    // Range starts at A2
+                    promises.push(
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId,
+                            range: `VP Logs!A2`,
+                            valueInputOption: 'USER_ENTERED',
+                            requestBody: { values: injectedVpLogRows }
+                        })
+                    );
+                }
+            }
+        }
+
+        await Promise.all(promises);
+
+        console.log(`Appended data to active sheets.`);
         res.status(200).send('Saved to Google Sheet successfully');
 
     } catch (error) {
@@ -151,7 +283,7 @@ app.get('/api/recent-games', async (req, res) => {
         const sheets = await getSheetsClient();
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
-            range: 'Scores!A:F', // ID, Date, Name, Leader, House, VP
+            range: 'Scores!A:G', // ID, Date, PlayerID, PlayerOrder, LeaderID, VP (+ legacy col)
         });
 
         const rows = response.data.values;
@@ -159,55 +291,46 @@ app.get('/api/recent-games', async (req, res) => {
             return res.json([]); // No data or just header
         }
 
-        // Group by Game ID (Index 0)
-        // Structure: Map<GameID, { id, date, players: [] }>
+        // Row 0 is the header - find column indices by name (robust to any column order)
+        const headerRow = rows[0];
+        const colIdx = {};
+        headerRow.forEach((h, i) => { colIdx[h] = i; });
+
+        // Required columns (fall back to positional for legacy data without headers)
+        const hasHeaders = colIdx['Game ID'] !== undefined;
+        const iGame = hasHeaders ? colIdx['Game ID'] : 0;
+        const iDate = hasHeaders ? colIdx['Game Date'] : 1;
+        const iPlayer = hasHeaders ? colIdx['Player ID'] : 2;
+        const iLeader = hasHeaders ? colIdx['Leader ID'] : (colIdx['Player Order'] !== undefined ? 4 : 3);
+        const iVP = hasHeaders ? colIdx['Victory Points'] : (colIdx['Player Order'] !== undefined ? 5 : 4);
+
+        // Group by Game ID. Scores are written newest-first (head-insertion),
+        // so reading top-to-bottom gives newest games first.
         const gamesMap = new Map();
 
-        // Skip header (row 0)
+        // Skip header row (row 0)
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            const gameId = row[0]; // Col A
-            const date = row[1];   // Col B
+            if (!row || row.length < 3) continue;
 
-            let pIdOrName, lIdOrName, vp;
+            const gameId = row[iGame];
+            const date = row[iDate];
+            const pId = row[iPlayer];
+            const lId = row[iLeader] !== undefined ? row[iLeader] : '';
+            const vp = row[iVP] !== undefined ? row[iVP] : '';
 
-            // Simple heuristic based on column count
-            // New Format: [ID, Date, PlayerID, LeaderID, VP] (Length 5)
-            // Old Format: [ID, Date, Name, Leader, House, VP] (Length 6)
-
-            if (row.length === 5) {
-                pIdOrName = row[2];
-                lIdOrName = row[3];
-                vp = row[4];
-            } else if (row.length >= 6) {
-                pIdOrName = row[2];
-                lIdOrName = row[3];
-                // row[4] is house (ignored now)
-                vp = row[5];
-            } else {
-                continue; // Malformed row
-            }
+            if (!gameId) continue;
 
             if (!gamesMap.has(gameId)) {
-                gamesMap.set(gameId, {
-                    id: gameId,
-                    date: date,
-                    players: []
-                });
+                gamesMap.set(gameId, { id: gameId, date: date, players: [] });
             }
-
-            // We push generic "playerId" / "leaderId" fields
-            // The frontend resolves them to names if they are IDs
-            gamesMap.get(gameId).players.push({
-                playerId: pIdOrName,
-                leaderId: lIdOrName,
-                vp: vp
-            });
+            gamesMap.get(gameId).players.push({ playerId: pId, leaderId: lId, vp: vp });
         }
 
-        // Convert Map to Array and take last 2
+        // Newest games are at the top of the sheet (head-insertion), so the first
+        // 2 unique game IDs encountered are the most recent. Reverse to get newest-first.
         const allGames = Array.from(gamesMap.values());
-        const recentGames = allGames.slice(-2).reverse(); // Newest first
+        const recentGames = allGames.slice(0, 2); // Already newest-first from head-insertion
 
         res.json(recentGames);
 
@@ -379,6 +502,94 @@ app.get('/api/leaders', async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching/seeding leaders:', error.message);
+        res.status(500).send(error.message);
+    }
+});
+
+app.get('/api/vp-actions', async (req, res) => {
+    const { spreadsheetId } = req.query;
+
+    if (!spreadsheetId) {
+        return res.status(400).send('Missing spreadsheetId');
+    }
+
+    try {
+        const sheets = await getSheetsClient();
+
+        // 1. Check if 'VP Actions' tab exists
+        const meta = await sheets.spreadsheets.get({ spreadsheetId });
+        const existingTitles = meta.data.sheets.map(s => s.properties.title);
+
+        if (!existingTitles.includes('VP Actions')) {
+            await sheets.spreadsheets.batchUpdate({
+                spreadsheetId,
+                requestBody: {
+                    requests: [{ addSheet: { properties: { title: 'VP Actions' } } }]
+                }
+            });
+            console.log("Created 'VP Actions' tab.");
+        }
+
+        // 2. Read all columns dynamically
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: 'VP Actions!A:Z',
+        });
+
+        let rows = response.data.values;
+
+        // 3. Seed if empty
+        if (!rows || rows.length === 0) {
+            console.log("Seeding 'VP Actions' with defaults...");
+            const defaultActions = [
+                ['Category', 'Action', 'Points'],
+                ['reputation', 'emperor', '1'],
+                ['reputation', 'spacing guild', '1']
+            ];
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId,
+                range: 'VP Actions!A1',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values: defaultActions }
+            });
+
+            rows = defaultActions;
+        }
+
+        // 4. Build column index map from header row (case-insensitive, trimmed)
+        const headerRow = (rows[0] || []).map(h => h.toLowerCase().trim());
+        const col = {
+            category: headerRow.indexOf('category'),
+            action: headerRow.indexOf('action') !== -1 ? headerRow.indexOf('action') : headerRow.indexOf('name'),
+            points: headerRow.indexOf('points'),
+            imageAsset: headerRow.indexOf('image asset'),
+            hexcode: headerRow.indexOf('hexcode'),
+        };
+
+        // 5. Transform to JSON
+        const actions = [];
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (col.category === -1 || col.action === -1 || col.points === -1) continue;
+            if (!row[col.category] || !row[col.action]) continue;
+
+            const rawHex = col.hexcode !== -1 && row[col.hexcode] ? row[col.hexcode].trim() : '';
+            const hexcode = rawHex ? (rawHex.startsWith('#') ? rawHex : `#${rawHex}`) : '';
+
+            actions.push({
+                category: row[col.category],
+                action: row[col.action],
+                points: parseInt(row[col.points]) || 0,
+                imageAsset: col.imageAsset !== -1 && row[col.imageAsset] ? row[col.imageAsset].trim() : '',
+                hexcode,
+            });
+        }
+
+        res.json(actions);
+
+    } catch (error) {
+        console.error('Error fetching/seeding VP actions:', error.message);
         res.status(500).send(error.message);
     }
 });
