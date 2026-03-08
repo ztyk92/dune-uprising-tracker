@@ -17,3 +17,6 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DUNE_UPRISING_TRACKER }}
           channelId: live
           projectId: dune-uprising-tracker
+          # Overwrite default `npm ci` behavior that is failing
+          # and force standard install and build
+          build_step_command: 'npm install && npm run build'
