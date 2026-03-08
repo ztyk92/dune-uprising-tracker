@@ -172,7 +172,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                     padding: '0 4px',
                                 }}>
                                     <img
-                                        src={`/assets/${encodeURIComponent(faction)}.png?v=2`}
+                                        src={`/assets/${encodeURIComponent(faction)}.png?v=3`}
                                         alt={faction}
                                         style={{
                                             width: '32px',
@@ -328,7 +328,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                         })}
                                     </div>
                                     <img
-                                        src={`/assets/${encodeURIComponent(upgrade.id)}.png?v=2`}
+                                        src={`/assets/${encodeURIComponent(upgrade.id)}.png?v=3`}
                                         alt={upgrade.id}
                                         style={{
                                             width: '32px',
@@ -423,7 +423,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                             }}>
                                                 {act.imageAsset && (
                                                     <img
-                                                        src={`/assets/${encodeURIComponent(act.imageAsset)}${act.imageAsset.includes('.') ? '' : '.png'}?v=2`}
+                                                        src={`/assets/${encodeURIComponent(act.imageAsset)}${act.imageAsset.includes('.') ? '' : '.png'}?v=3`}
                                                         alt={act.imageAsset}
                                                         style={{
                                                             width: '70px',
