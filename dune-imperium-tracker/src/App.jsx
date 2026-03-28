@@ -42,7 +42,7 @@ function RecentGamesList({ leaders, availablePlayers }) {
         return dateString.split('T')[0];
       }
       return dateString;
-    } catch (e) {
+    } catch {
       return 'Unknown Date';
     }
   };

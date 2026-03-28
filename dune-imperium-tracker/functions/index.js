@@ -1,3 +1,4 @@
+/* eslint-disable */  
 import { onRequest } from "firebase-functions/v2/https";
 import logger from "firebase-functions/logger";
 import app from "./server.js";

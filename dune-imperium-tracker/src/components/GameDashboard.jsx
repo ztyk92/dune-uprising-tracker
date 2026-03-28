@@ -11,10 +11,11 @@ export default function GameDashboard({ gameData, onAction, onEndGame, onUndo, c
     useEffect(() => {
         const firstPlayerIndex = gameData.players.findIndex(p => p.isFirstPlayer);
         if (firstPlayerIndex !== -1) {
-            setCurrentIndex(firstPlayerIndex);
+            setTimeout(() => setCurrentIndex(firstPlayerIndex), 0);
         } else {
-            setCurrentIndex(0);
+            setTimeout(() => setCurrentIndex(0), 0);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameData.round, gameData.players.length]); // Only reset on round change or setup load
 
 

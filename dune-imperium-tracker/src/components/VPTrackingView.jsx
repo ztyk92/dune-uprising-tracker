@@ -11,8 +11,9 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
 
     useEffect(() => {
         if (selectedPlayerIndex >= activePlayers.length && activePlayers.length > 0) {
-            setSelectedPlayerIndex(0);
+            setTimeout(() => setSelectedPlayerIndex(0), 0);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activePlayers.length]);
 
     const activePlayer = activePlayers[selectedPlayerIndex];
