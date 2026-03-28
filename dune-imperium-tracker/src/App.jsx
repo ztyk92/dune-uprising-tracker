@@ -239,6 +239,18 @@ function App() {
       const allianceFactions = ['Emperor', 'Spacing Guild', 'Bene Gesserit', 'Fremen'];
       const matchedFaction = allianceFactions.find(f => actionName.includes(f));
 
+      // Handle Base Faction Track logic (Toggle)
+      if (matchedFaction && actionName === matchedFaction) {
+        const targetIndex = currentPlayersState.findIndex(p => p.name === actionDetails.playerName);
+        if (targetIndex !== -1) {
+          const trackKey = `hasTrackVP_${matchedFaction}`;
+          if (currentPlayersState[targetIndex][trackKey]) {
+            points = -1;
+            actionName = `Lost ${matchedFaction}`;
+          }
+        }
+      }
+
       // Handle Alliance Stealing Logic
       if (matchedFaction && actionName.includes('Alliance')) {
         const currentOwner = newAlliances[matchedFaction];
@@ -285,10 +297,16 @@ function App() {
 
         // Handle Upgrades logic tracking
         let upgradesUpdate = {};
-        if (actionName === 'High Council') upgradesUpdate.highCouncil = true;
-        if (actionName === 'Swordmaster') upgradesUpdate.swordmaster = true;
-        if (actionName === 'Sardaukar' || actionName === 'Acquire Sardaukar') {
+        if (actionDetails.details.actionName === 'High Council') upgradesUpdate.highCouncil = true;
+        if (actionDetails.details.actionName === 'Swordmaster') upgradesUpdate.swordmaster = true;
+        if (actionDetails.details.actionName === 'Sardaukar' || actionDetails.details.actionName === 'Acquire Sardaukar') {
           upgradesUpdate.sardaukar = (currentPlayersState[targetIndex].sardaukar || 0) + 1;
+        }
+
+        // Apply track toggle
+        if (matchedFaction && actionDetails.details.actionName === matchedFaction) {
+          const trackKey = `hasTrackVP_${matchedFaction}`;
+          upgradesUpdate[trackKey] = !currentPlayersState[targetIndex][trackKey];
         }
 
         currentPlayersState[targetIndex] = {
