@@ -230,7 +230,7 @@ function App() {
 
     // HANDLE VP TRACKING MODE actions
     if (actionDetails.action === 'VP_ADJUST') {
-      const { points, actionName, category } = actionDetails.details;
+      let { points, actionName, category } = actionDetails.details;
 
       let currentPlayersState = [...gameData.players];
       let newHistoryEntries = [];
@@ -243,31 +243,38 @@ function App() {
       if (matchedFaction && actionName.includes('Alliance')) {
         const currentOwner = newAlliances[matchedFaction];
 
-        if (currentOwner && currentOwner !== actionDetails.playerName) {
-          // Owner loses alliance, -1 VP
-          const ownerIndex = currentPlayersState.findIndex(p => p.name === currentOwner);
-          if (ownerIndex !== -1) {
-            const ownerBefore = currentPlayersState[ownerIndex].vp || 0;
-            const ownerAfter = ownerBefore - 1;
-            currentPlayersState[ownerIndex] = { ...currentPlayersState[ownerIndex], vp: ownerAfter };
+        if (currentOwner === actionDetails.playerName) {
+          // User already owns the alliance. Remove it and reduce their VP by 1.
+          newAlliances[matchedFaction] = null;
+          points = -1;
+          actionName = `Lost ${matchedFaction} Alliance`;
+        } else {
+          if (currentOwner && currentOwner !== actionDetails.playerName) {
+            // Owner loses alliance, -1 VP
+            const ownerIndex = currentPlayersState.findIndex(p => p.name === currentOwner);
+            if (ownerIndex !== -1) {
+              const ownerBefore = currentPlayersState[ownerIndex].vp || 0;
+              const ownerAfter = ownerBefore - 1;
+              currentPlayersState[ownerIndex] = { ...currentPlayersState[ownerIndex], vp: ownerAfter };
 
-            newHistoryEntries.push({
-              timestamp: actionDetails.timestamp, // Share timestamp loosely
-              playerName: currentOwner,
-              action: `Lost ${matchedFaction} Alliance (-1 VP)`,
-              round: currentRound,
-              rawDetails: {
-                category: 'Reputation',
-                actionName: `Lost ${matchedFaction} Alliance`,
-                points: -1,
-                vpBefore: ownerBefore,
-                vpAfter: ownerAfter
-              }
-            });
+              newHistoryEntries.push({
+                timestamp: actionDetails.timestamp, // Share timestamp loosely
+                playerName: currentOwner,
+                action: `Lost ${matchedFaction} Alliance (-1 VP)`,
+                round: currentRound,
+                rawDetails: {
+                  category: 'Reputation',
+                  actionName: `Lost ${matchedFaction} Alliance`,
+                  points: -1,
+                  vpBefore: ownerBefore,
+                  vpAfter: ownerAfter
+                }
+              });
+            }
           }
+          // Set new owner
+          newAlliances[matchedFaction] = actionDetails.playerName;
         }
-        // Set new owner
-        newAlliances[matchedFaction] = actionDetails.playerName;
       }
 
       // Apply primary action
