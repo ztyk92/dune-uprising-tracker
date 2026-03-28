@@ -86,6 +86,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                         const effectiveVp = (p.vp || 0) + startPos;
                         return effectiveVp === space;
                     });
+                    const isGolden = space >= 10 && space <= 14;
                     return (
                         <div key={space} style={{
                             width: '100%',
@@ -94,7 +95,9 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            borderBottom: space > 0 ? '2px solid #555' : 'none',
+                            backgroundColor: isGolden ? 'rgba(212, 175, 55, 0.15)' : 'transparent',
+                            borderBottom: space > 0 ? (space >= 10 && space < 14 ? '2px solid rgba(212, 175, 55, 0.4)' : '2px solid #555') : 'none',
+                            boxShadow: isGolden ? 'inset 0 0 10px rgba(212, 175, 55, 0.05)' : 'none',
                             position: 'relative',
                             gap: '2px',
                         }}>
@@ -102,7 +105,8 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                             <span style={{
                                 fontSize: '1.2rem',
                                 fontWeight: 'bold',
-                                color: '#ccc',
+                                color: isGolden ? 'var(--color-accent-gold)' : '#ccc',
+                                textShadow: isGolden ? '0 0 5px rgba(212, 175, 55, 0.5)' : 'none',
                                 lineHeight: 1,
                                 userSelect: 'none',
                                 position: 'absolute',
