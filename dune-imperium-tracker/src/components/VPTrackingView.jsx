@@ -347,7 +347,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                 </div>
 
                 {/* Actions Grid */}
-                <div style={{ columnWidth: '18rem', columnGap: '1rem', marginTop: '1rem' }}>
+                <div style={{ columnCount: 2, columnWidth: '18rem', columnGap: '1rem', marginTop: '1rem' }}>
                     <div style={{ textAlign: 'center', color: '#666', fontSize: '0.8rem', columnSpan: 'all', marginBottom: '1rem' }}>
                         Adding VP to <strong style={{ color: 'var(--color-accent-gold)' }}>{activePlayer.name}</strong>
                     </div>
