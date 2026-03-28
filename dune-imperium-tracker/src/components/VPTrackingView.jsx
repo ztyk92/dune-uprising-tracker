@@ -382,17 +382,19 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                 {actions.map((act, i) => {
                                     const key = `${category}-${i}`;
                                     const isFlashing = flashedKey === key;
+                                    const isDisabled = (act.action === 'High Council' && activePlayer.highCouncil) || (act.action === 'Swordmaster' && activePlayer.swordmaster);
                                     return (
                                         <button
                                             key={i}
-                                            onClick={() => handleActionClick(act, key)}
+                                            onClick={() => !isDisabled && handleActionClick(act, key)}
+                                            disabled={isDisabled}
                                             style={{
                                                 backgroundColor: isFlashing ? '#4a4' : (act.hexcode || '#2a2a2a'),
                                                 border: isFlashing ? '2px solid #8f8' : (act.hexcode ? `1px solid ${act.hexcode}` : '1px solid #444'),
                                                 borderRadius: '6px',
                                                 padding: '0.6rem 0.2rem',
                                                 color: '#fff',
-                                                cursor: 'pointer',
+                                                cursor: isDisabled ? 'not-allowed' : 'pointer',
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 justifyContent: 'center',
@@ -402,9 +404,10 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                                 minHeight: '80px',
                                                 transform: isFlashing ? 'scale(0.96)' : 'scale(1)',
                                                 textShadow: act.hexcode ? '0 1px 2px rgba(0,0,0,0.6)' : 'none',
+                                                opacity: isDisabled ? 0.4 : 1,
                                             }}
-                                            onMouseOver={(e) => { if (!isFlashing) e.currentTarget.style.filter = 'brightness(1.2)'; }}
-                                            onMouseOut={(e) => { if (!isFlashing) e.currentTarget.style.filter = 'brightness(1)'; }}
+                                            onMouseOver={(e) => { if (!isFlashing && !isDisabled) e.currentTarget.style.filter = 'brightness(1.2)'; }}
+                                            onMouseOut={(e) => { if (!isFlashing && !isDisabled) e.currentTarget.style.filter = 'brightness(1)'; }}
                                         >
                                             <span style={{
                                                 textAlign: 'center',
