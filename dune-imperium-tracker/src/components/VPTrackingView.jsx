@@ -320,16 +320,21 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                 </div>
 
                 {/* Agent Actions Tracker module */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ textAlign: 'center', color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                <div style={{ columnCount: 2, columnWidth: '18rem', columnGap: '1rem', marginTop: '1rem' }}>
+                    <div style={{ textAlign: 'center', color: '#666', fontSize: '0.8rem', columnSpan: 'all', marginBottom: '1rem' }}>
                         Adding VP to <strong style={{ color: 'var(--color-accent-gold)' }}>{activePlayer.name}</strong>
                     </div>
 
                     {Object.entries(actionsByCategory).map(([category, actions]) => (
                         <div key={category} style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.5rem',
+                            breakInside: 'avoid',
+                            marginBottom: '1rem',
+                            breakBefore: actions.length > 4 ? 'column' : 'auto',
+                            // Ensure it behaves as a block in columns
+                            display: 'inline-block',
+                            verticalAlign: 'top',
+                            width: actions.length === 1 ? 'calc(50% - 0.25rem)' : '100%',
+                            marginRight: actions.length === 1 ? '0.25rem' : '0'
                         }}>
                             <h3 style={{
                                 color: 'var(--color-text-muted)',
@@ -337,13 +342,14 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                 fontSize: '0.8rem',
                                 borderBottom: '1px solid #333',
                                 paddingBottom: '0.2rem',
-                                margin: 0
+                                marginBottom: '0.5rem',
+                                marginTop: '0.5rem'
                             }}>
                                 {category}
                             </h3>
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                                gridTemplateColumns: actions.length === 1 ? '1fr' : 'repeat(2, 1fr)',
                                 gap: '0.5rem'
                             }}>
                                 {actions.map((act, i) => {
@@ -397,8 +403,8 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                                         src={`/assets/${encodeURIComponent(act.imageAsset)}${act.imageAsset.includes('.') ? '' : '.png'}?v=3`}
                                                         alt={act.imageAsset}
                                                         style={{
-                                                            width: '50px',
-                                                            height: '50px',
+                                                            width: '70px',
+                                                            height: '70px',
                                                             objectFit: 'contain',
                                                             borderRadius: '4px',
                                                             flexShrink: 0,
