@@ -11,12 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies and Build
+        run: npm ci && npm run build
+        
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DUNE_UPRISING_TRACKER }}
           channelId: live
           projectId: dune-uprising-tracker
-          # Overwrite default `npm ci` behavior that is failing
-          # and force standard install and build
-          build_step_command: 'npm install && npm run build'
+          # Skip built-in build step since we handled it above
+          build_step_command: 'echo "Build complete"'
