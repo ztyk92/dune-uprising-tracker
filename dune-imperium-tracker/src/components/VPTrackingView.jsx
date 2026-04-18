@@ -140,17 +140,40 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    justifyContent: 'space-between',
                     backgroundColor: '#1a1a1a',
-                    padding: '0.5rem',
+                    padding: '0.5rem 1rem',
                     borderRadius: '8px',
                     border: '1px solid #333',
                     width: '100%',
                     boxSizing: 'border-box'
                 }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center', textTransform: 'uppercase', color: 'var(--color-accent-gold)' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'left', textTransform: 'uppercase', color: 'var(--color-accent-gold)' }}>
                         ROUND {round}
                     </span>
+                    <button
+                        onClick={() => {
+                            if (onRoundChange) onRoundChange(round + 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        style={{
+                            background: 'var(--color-accent-gold)',
+                            border: 'none',
+                            color: '#000',
+                            padding: '0.4rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            boxShadow: '0 0 10px rgba(212,175,55,0.4)',
+                            transition: 'transform 0.1s, box-shadow 0.1s',
+                        }}
+                        onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(212,175,55,0.6)'; }}
+                        onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 0 10px rgba(212,175,55,0.4)'; }}
+                    >
+                        Advance ⏭
+                    </button>
                 </div>
 
                 {/* Alliance Tracker module */}
