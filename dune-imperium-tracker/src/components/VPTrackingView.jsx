@@ -156,7 +156,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                 {/* Alliance Tracker module */}
                 <div style={{
                      display: 'grid',
-                     gridTemplateColumns: 'repeat(auto-fit, minmax(76px, 1fr))',
+                     gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
                      gap: '0.5rem',
                      width: '100%'
                 }}>
@@ -175,30 +175,30 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                padding: '0 4px',
-                                height: '44px',
+                                padding: '4px',
+                                minHeight: '50px',
                             }}>
                                 <img
                                     src={`/assets/${encodeURIComponent(faction)}.png?v=3`}
                                     alt={faction}
                                     style={{
-                                        width: '32px',
-                                        height: '32px',
+                                        width: '40px',
+                                        height: '40px',
                                         objectFit: 'contain',
                                         opacity: 0.5,
                                         borderRadius: '4px',
                                         flexShrink: 0
                                     }}
                                 />
-                                <div style={{ width: '26px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <div style={{ width: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', paddingLeft: '4px' }}>
                                     {col && (
                                         <div style={{
-                                            width: '18px',
-                                            height: '10px',
+                                            width: '56px',
+                                            height: '28px',
                                             borderRadius: '50% / 40%',
                                             backgroundColor: col.bg,
-                                            boxShadow: `0 0 4px ${col.glow}88, inset 0 2px 2px rgba(255,255,255,0.2)`,
-                                            border: `1px solid ${col.glow}`
+                                            boxShadow: `0 0 8px ${col.glow}aa, inset 0 3px 6px rgba(255,255,255,0.3)`,
+                                            border: `2px solid ${col.glow}`
                                         }} />
                                     )}
                                 </div>
@@ -258,7 +258,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                 {/* Upgrades Tracker module */}
                 <div style={{
                      display: 'grid',
-                     gridTemplateColumns: 'repeat(auto-fit, minmax(76px, 1fr))',
+                     gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
                      gap: '0.5rem',
                      width: '100%'
                 }}>
@@ -283,25 +283,25 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                padding: '0 4px',
-                                height: '44px',
+                                padding: '4px',
+                                minHeight: '50px',
                             }}>
                                 {/* Render discs for attaining players on the left */}
-                                <div style={{ width: '30px', display: 'flex', gap: '2px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+                                <div style={{ width: 'auto', display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginRight: 'auto', paddingRight: '4px' }}>
                                     {attainingPlayers.map(p => {
                                         const col = COLOUR_MAP[p.colour] || { bg: '#888', glow: '#aaa' };
                                         return (
                                             <div key={p.name} style={{
-                                                width: upgrade.type === 'tally' ? '14px' : '18px',
-                                                height: upgrade.type === 'tally' ? '14px' : '10px',
-                                                borderRadius: upgrade.type === 'tally' ? '50%' : '50% / 40%',
+                                                width: '56px',
+                                                height: '28px',
+                                                borderRadius: '50% / 40%',
                                                 backgroundColor: col.bg,
-                                                boxShadow: `0 0 4px ${col.glow}88, inset 0 2px 2px rgba(255,255,255,0.2)`,
-                                                border: `1px solid ${col.glow}`,
+                                                boxShadow: `0 0 8px ${col.glow}aa, inset 0 3px 6px rgba(255,255,255,0.3)`,
+                                                border: `2px solid ${col.glow}`,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                fontSize: '0.6rem',
+                                                fontSize: '1.2rem',
                                                 fontWeight: 'bold',
                                                 color: '#fff',
                                                 lineHeight: 1
@@ -315,8 +315,8 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                     src={`/assets/${encodeURIComponent(upgrade.id)}.png?v=3`}
                                     alt={upgrade.id}
                                     style={{
-                                        width: '32px',
-                                        height: '32px',
+                                        width: '40px',
+                                        height: '40px',
                                         objectFit: 'contain',
                                         opacity: 0.5,
                                         borderRadius: '4px',
