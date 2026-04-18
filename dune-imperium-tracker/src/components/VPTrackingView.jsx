@@ -212,13 +212,14 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                 {/* Players Selection Module */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: `repeat(auto-fit, minmax(60px, 1fr))`,
+                    gridTemplateColumns: `repeat(auto-fit, minmax(130px, 1fr))`,
                     gap: '0.5rem',
                     width: '100%',
                 }}>
                     {activePlayers.map((p, idx) => {
                         const isSelected = idx === selectedPlayerIndex;
                         const col = COLOUR_MAP[p.colour] || { bg: '#888', glow: '#aaa' };
+                        const effectiveVp = (p.vp || 0) + startPos;
 
                         return (
                             <button
@@ -230,26 +231,31 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                     border: isSelected ? `3px solid #fff` : `2px solid transparent`,
                                     boxShadow: isSelected ? `0 4px 12px ${col.glow}` : 'none',
                                     opacity: isSelected ? 1 : 0.6,
-                                    borderRadius: '6px',
-                                    padding: '0.5rem',
+                                    borderRadius: '8px',
+                                    padding: '0.5rem 1rem',
                                     cursor: 'pointer',
                                     display: 'flex',
-                                    flexDirection: 'column',
+                                    flexDirection: 'row',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '0.1rem',
+                                    gap: '1rem',
                                     transition: 'all 0.1s',
-                                    transform: isSelected ? 'translateY(-2px)' : 'none'
+                                    transform: isSelected ? 'translateY(-2px)' : 'none',
+                                    width: '100%'
                                 }}
                             >
-                                <span style={{ fontWeight: 'bold', fontSize: '0.9rem', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>{p.name}</span>
                                 <div style={{
-                                    fontSize: '1.4rem',
+                                    fontSize: '3.5rem',
                                     fontWeight: 'bold',
                                     fontFamily: 'var(--font-heading)',
+                                    lineHeight: 1,
+                                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
                                 }}>
-                                    {p.vp || 0}
+                                    {effectiveVp}
                                 </div>
+                                <span style={{ fontWeight: 'bold', fontSize: '1.1rem', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textShadow: '1px 1px 2px rgba(0,0,0,0.8)', textAlign: 'left' }}>
+                                    {p.name}
+                                </span>
                             </button>
                         );
                     })}
