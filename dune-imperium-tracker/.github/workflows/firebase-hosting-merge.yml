@@ -16,10 +16,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
           
-      - name: Install Dependencies and Build
-        run: npm ci && npm run build
+      - name: Force Install and Build
+        run: npm install && npm run build
         
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
