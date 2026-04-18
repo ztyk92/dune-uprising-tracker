@@ -100,34 +100,39 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                             boxShadow: isGolden ? 'inset 0 0 10px rgba(212, 175, 55, 0.05)' : 'none',
                             position: 'relative',
                             gap: '2px',
+                            overflow: 'hidden',
                         }}>
                             {/* Space number */}
                             <span style={{
-                                fontSize: '1.2rem',
+                                fontSize: '3.5rem',
                                 fontWeight: 'bold',
-                                color: isGolden ? 'var(--color-accent-gold)' : '#ccc',
+                                color: isGolden ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.15)',
                                 textShadow: isGolden ? '0 0 5px rgba(212, 175, 55, 0.5)' : 'none',
                                 lineHeight: 1,
                                 userSelect: 'none',
                                 position: 'absolute',
-                                top: '5px',
-                                left: '5px',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 0,
                             }}>{space}</span>
                             {/* Coloured cylinders for players at this space */}
-                            {playersHere.map(p => {
-                                const col = COLOUR_MAP[p.colour] || { bg: '#888', glow: '#aaa' };
-                                return (
-                                    <div key={p.name} title={`${p.name}: ${p.vp || 0} VP`} style={{
-                                        width: '28px',
-                                        height: '16px',
-                                        borderRadius: '50% / 40%',
-                                        backgroundColor: col.bg,
-                                        boxShadow: `0 0 6px ${col.glow}88, inset 0 2px 4px rgba(255,255,255,0.2)`,
-                                        border: `1px solid ${col.glow}`,
-                                        flexShrink: 0,
-                                    }} />
-                                );
-                            })}
+                            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                {playersHere.map(p => {
+                                    const col = COLOUR_MAP[p.colour] || { bg: '#888', glow: '#aaa' };
+                                    return (
+                                        <div key={p.name} title={`${p.name}: ${p.vp || 0} VP`} style={{
+                                            width: '56px',
+                                            height: '28px',
+                                            borderRadius: '50% / 40%',
+                                            backgroundColor: col.bg,
+                                            boxShadow: `0 0 8px ${col.glow}aa, inset 0 3px 6px rgba(255,255,255,0.3)`,
+                                            border: `2px solid ${col.glow}`,
+                                            flexShrink: 0,
+                                        }} />
+                                    );
+                                })}
+                            </div>
                         </div>
                     );
                 })}
