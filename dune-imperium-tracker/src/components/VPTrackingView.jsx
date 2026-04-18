@@ -153,7 +153,7 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                     </span>
                 </div>
 
-                {/* Alliance Tracker module + Upgrades combined in a responsive grid */}
+                {/* Alliance Tracker module */}
                 <div style={{
                      display: 'grid',
                      gridTemplateColumns: 'repeat(auto-fit, minmax(76px, 1fr))',
@@ -206,7 +206,62 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                         );
                     })}
                     
-                    {/* Upgrades */}
+
+                </div>
+
+                {/* Players Selection Module */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(auto-fit, minmax(60px, 1fr))`,
+                    gap: '0.5rem',
+                    width: '100%',
+                }}>
+                    {activePlayers.map((p, idx) => {
+                        const isSelected = idx === selectedPlayerIndex;
+                        const col = COLOUR_MAP[p.colour] || { bg: '#888', glow: '#aaa' };
+
+                        return (
+                            <button
+                                key={p.name}
+                                onClick={() => handlePlayerClick(idx)}
+                                style={{
+                                    backgroundColor: col.bg,
+                                    color: '#fff',
+                                    border: isSelected ? `3px solid #fff` : `2px solid transparent`,
+                                    boxShadow: isSelected ? `0 4px 12px ${col.glow}` : 'none',
+                                    opacity: isSelected ? 1 : 0.6,
+                                    borderRadius: '6px',
+                                    padding: '0.5rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.1rem',
+                                    transition: 'all 0.1s',
+                                    transform: isSelected ? 'translateY(-2px)' : 'none'
+                                }}
+                            >
+                                <span style={{ fontWeight: 'bold', fontSize: '0.9rem', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>{p.name}</span>
+                                <div style={{
+                                    fontSize: '1.4rem',
+                                    fontWeight: 'bold',
+                                    fontFamily: 'var(--font-heading)',
+                                }}>
+                                    {p.vp || 0}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Upgrades Tracker module */}
+                <div style={{
+                     display: 'grid',
+                     gridTemplateColumns: 'repeat(auto-fit, minmax(76px, 1fr))',
+                     gap: '0.5rem',
+                     width: '100%'
+                }}>
                     {[
                         { id: 'High Council', type: 'boolean' },
                         { id: 'Swordmaster', type: 'boolean' },
@@ -269,52 +324,6 @@ export default function VPTrackingView({ players, alliances, round = 1, vpAction
                                     }}
                                 />
                             </div>
-                        );
-                    })}
-                </div>
-
-                {/* Players Selection Module */}
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(auto-fit, minmax(60px, 1fr))`,
-                    gap: '0.5rem',
-                    width: '100%',
-                }}>
-                    {activePlayers.map((p, idx) => {
-                        const isSelected = idx === selectedPlayerIndex;
-                        const col = COLOUR_MAP[p.colour] || { bg: '#888', glow: '#aaa' };
-
-                        return (
-                            <button
-                                key={p.name}
-                                onClick={() => handlePlayerClick(idx)}
-                                style={{
-                                    backgroundColor: col.bg,
-                                    color: '#fff',
-                                    border: isSelected ? `3px solid #fff` : `2px solid transparent`,
-                                    boxShadow: isSelected ? `0 4px 12px ${col.glow}` : 'none',
-                                    opacity: isSelected ? 1 : 0.6,
-                                    borderRadius: '6px',
-                                    padding: '0.5rem',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '0.1rem',
-                                    transition: 'all 0.1s',
-                                    transform: isSelected ? 'translateY(-2px)' : 'none'
-                                }}
-                            >
-                                <span style={{ fontWeight: 'bold', fontSize: '0.9rem', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>{p.name}</span>
-                                <div style={{
-                                    fontSize: '1.4rem',
-                                    fontWeight: 'bold',
-                                    fontFamily: 'var(--font-heading)',
-                                }}>
-                                    {p.vp || 0}
-                                </div>
-                            </button>
                         );
                     })}
                 </div>
