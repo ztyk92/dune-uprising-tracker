@@ -9,7 +9,8 @@
     "build": "vite build",
     "start": "node functions/server.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync": "git add . && git commit -m \"Auto-sync: update from local environment\" && git push origin main"
   },
   "dependencies": {
     "body-parser": "^2.2.1",
